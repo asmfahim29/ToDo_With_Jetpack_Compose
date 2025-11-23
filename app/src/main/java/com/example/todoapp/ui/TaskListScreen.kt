@@ -19,6 +19,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,6 +34,7 @@ fun TaskListScreen (
     taskViewModel: TaskViewModel = viewModel()
 ) {
     val tasks =  taskViewModel.tasks.collectAsState()
+    var showDialog = rememberSaveable { mutableStateOf(false) }
 
     Scaffold (
         topBar = {
@@ -53,13 +56,7 @@ fun TaskListScreen (
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    taskViewModel.addTask(
-                        Task(
-                            title = "New Task",
-                            description = "New Task Description",
-                            id = tasks.value.size + 1
-                        )
-                    )
+                    showDialog.value = true
                 },
                 content = {
                     Icon(
@@ -87,5 +84,21 @@ fun TaskListScreen (
             }
         }
 
+    }
+
+    if(showDialog.value) {
+        TaskInputDialog(
+            onDismiss = { showDialog.value = false },
+            onConfirm = {
+                title, description ->
+                taskViewModel.addTask(
+                    Task(
+                        title = title,
+                        description = description,
+                        id = tasks.value.size + 1
+                    )
+                )
+            }
+        )
     }
 }
